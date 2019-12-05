@@ -36,7 +36,7 @@ pipeline {
       }
       post {
         always {
-          archiveArtifacts 'app/build/reports/tests/**/*'
+          archiveArtifacts 'app/build/tests-results/**/*'
         }
       }
     }
