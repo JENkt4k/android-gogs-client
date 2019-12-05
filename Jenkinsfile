@@ -18,7 +18,9 @@ pipeline {
         }       
       }
       post {
-        androidLint canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
+        always {
+          androidLint canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
+        }
       }
     }
     stage('test'){
