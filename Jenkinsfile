@@ -18,10 +18,7 @@ pipeline {
         }       
       }
       post {
-        always {
-            archiveArtifacts 'app/build/reports/**/*.xml'
-            archiveArtifacts 'app/build/reports/**/*.html'
-        }
+        androidLint canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
       }
     }
     stage('test'){
