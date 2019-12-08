@@ -3,6 +3,7 @@ pipeline {
   stages {
     stage('build') {
       steps {
+          sh 'echo sdk.dir=$ANDROID_HOME >> local.properties'
           sh './gradlew --no-daemon'
       }
     }
