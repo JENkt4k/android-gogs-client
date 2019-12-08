@@ -1,45 +1,64 @@
 pipeline {
-  agent { docker { image 'circleci/android:api-29-node' } }
+  agent {
+    docker {
+       image 'circleci/android:api-29-node'
+    }
+  }
   stages {
+    stage('clean') {
+      steps {
+          sh './gradlew clean'
+      }
+    }
     stage('build') {
       steps {
           sh 'echo sdk.dir=$ANDROID_HOME >> local.properties'
-          sh './gradlew --no-daemon'
+          sh './gradlew build'
       }
     }
-    stage('lint'){
-      steps{
-        script {
-          try {
-            sh './gradlew check'
-          } catch (Exception e) {
-            echo e.getMessage()
-            echo "Lint failed"
+    stage('Lint and Unit Test'){
+      parallel {
+        stage('lint'){
+          steps{
+            script {
+              try {
+                sh './gradlew lint'
+              } catch (Exception e) {
+                echo e.getMessage()
+                echo "Lint failed"
+              }
+            }
           }
-        }       
-      }
-      post {
-        always {
-          androidLint canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/lint-results*.xml', unHealthy: ''
+        }
+        stage('test'){
+          steps{
+            script {
+              try {
+                sh './gradlew test'
+              } catch (Exception e) {
+                echo e.getMessage()
+                echo "test failed"
+              }
+            }
+          }
         }
       }
     }
-    stage('test'){
+    stage('createAPK'){
       steps{
-        script {
-          try {
-            sh './gradlew test'
-          } catch (Exception e) {
-            echo e.getMessage()
-            echo "Release failed"
-          }
-        }       
-      }
-      post {
-        always {
-          archiveArtifacts 'app/build/tests-results/**/*'
-        }
+        sh './gradlew assembleRelease'
       }
     }
   }
-} 
+  post {
+    always {
+      junit 'app/build/test-results/**/*.xml'
+      androidLint canComputeNew: false, defaultEncoding: '', healthy: '', pattern: 'app/build/reports/**/*', unHealthy: ''
+      archiveArtifacts 'app/build/outputs/apk/**/*.apk'
+      dir('app/build/test-results'){
+        deleteDir()
+      }
+
+    }
+  }
+}
